@@ -1,6 +1,4 @@
-![sumo_RC_with_transmitter-removebg-preview](https://github.com/user-attachments/assets/8882f190-09cc-4009-bd9e-b508a40e20cc)  ![sumo_robot_500_gram2-removebg-preview](https://github.com/user-attachments/assets/d36141cd-8de2-4ed7-9a1a-c86c26b80938)
-
-
+![sumo_RC_with_transmitter-removebg-preview](https://github.com/user-attachments/assets/8882f190-09cc-4009-bd9e-b508a40e20cc)![sumo_robot_500_gram2-removebg-preview](https://github.com/user-attachments/assets/d36141cd-8de2-4ed7-9a1a-c86c26b80938)
 
 
 ### **RCA Bizbot Sumo Robot Controller Description**  
