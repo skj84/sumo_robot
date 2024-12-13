@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/033d32da-c654-4f87-bd09-e2ffddb3a291)
+![sumo_RC_500_gram-removebg-preview](https://github.com/user-attachments/assets/fbb451e5-2b58-41b7-b867-da987f968d1e)
 
 
 ### **RCA Bizbot Sumo Robot Controller Description**  
