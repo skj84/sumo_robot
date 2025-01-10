@@ -1,6 +1,5 @@
 ![sumo_RC_with_transmitter-removebg-preview](https://github.com/user-attachments/assets/8882f190-09cc-4009-bd9e-b508a40e20cc)!
 
-
 ### **RCA Bizbot Sumo Robot Controller Description**  
 
 The **RCA Bizbot Sumo Robot Controller** is a versatile and robust control board designed specifically for sumo robot applications. This controller integrates essential features to deliver reliable performance for competitive sumo robot tasks while maintaining ease of use for hobbyists and professionals alike.
@@ -38,3 +37,8 @@ The **RCA Bizbot Sumo Robot Controller** is a versatile and robust control board
     - Includes a **dedicated Bluetooth port**, allowing seamless integration with wireless communication modules for remote programming, monitoring, or control.
 
 This compact yet powerful controller is ideal for sumo robots that demand high motor performance, flexibility in strategy, and intuitive user control. The **RCA Bizbot Sumo Robot Controller** is the perfect choice for competitive robotics enthusiasts looking for a reliable and feature-rich solution.
+
+**Wiring digram for RC controller**:
+
+![image](https://github.com/user-attachments/assets/c61634a9-e09d-4a03-8834-61f51657e3e6)
+
