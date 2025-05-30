@@ -1,171 +1,163 @@
-//RCA BIZBOT SUMO ROBOT RC (MANUAL CONTROL)
-//Code name purpose
-//Owner: Bizbot Technology
-//web: https://bveetamini.com
-//version: 1.0 (latest version if any)
-//special isntructions for user
-//PLEASE DO NOT DELETE THIS COMMENT//
+/*Please do not remove this comment for better future
+//use with BIZBOT RCA SUMO ROBOT CONTROLLER V2.4
+//Please contact hello@bveetamini.com for technical support
 
-// Notes of the Mario main theme (frequency in Hz). When turn on robot it play once.
-// If you dont like it, you can comment this this.
+We respects all the originality. Used this code as is.
+Good luck.
 
-// Notes of the Mario main theme (frequency in Hz). When turn on robot it play once.
-// If you dont like it, you can comment this this.
+*/
 
-#define BUZZER_PIN 13
+// Almost same as URC10 Motor Driver Pins
+#define leftPWM 5
+#define leftDir1 2
+#define leftDir2 3
 
-#define NOTE_E7 2637
-#define NOTE_G7 3136
-#define NOTE_A7 3520
-#define NOTE_B7 3951
-#define NOTE_C7 2093
-#define NOTE_E6 1319
-#define NOTE_G6 1568
-#define NOTE_A6 1760
-#define NOTE_B6 1976
-#define NOTE_C6 1047
-#define NOTE_D6 1175
-#define NOTE_FS6 1480
-#define NOTE_GS6 1661
-#define NOTE_DS6 1245
+#define rightPWM 6
+#define rightDir1 4
+#define rightDir2 7
 
-// Define durations
-#define WHOLE_NOTE 1000
-#define HALF_NOTE (WHOLE_NOTE / 2)
-#define QUARTER_NOTE (WHOLE_NOTE / 4)
-#define EIGHTH_NOTE (WHOLE_NOTE / 8)
+// Receiver pins
+#define RX_CH_1 9   // Steering Channel (Turn Left / Right)
+#define RX_CH_2 8  // Throttle channel (Move Forward / Backward)
 
-// Melody and note durations
-int melody[] = {
-  NOTE_E7, NOTE_E7, 0, NOTE_E7, 0, NOTE_C7, NOTE_E7, 0, NOTE_G7, 0, 0,  0,
-};
+// Parameters
+#define deadZone 40  // Anything between -20 and 20 is STOP
 
-int noteDurations[] = {
-  EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE,
-  EIGHTH_NOTE, EIGHTH_NOTE, QUARTER_NOTE, QUARTER_NOTE, QUARTER_NOTE, QUARTER_NOTE,
-};
+int throttleCH, steeringCH;
+int leftMotorSpeed, rightMotorSpeed;
 
-// Define buzzer and motor control pins
-int buzzerPin = 13;
-#define MOTOR_A_FWD  2
-#define MOTOR_A_BWD  3
-#define MOTOR_B_FWD  4
-#define MOTOR_B_BWD  7
-
-// RC receiver pins and motor enable pins (PWM)
-#define RC_SPEED     8  
-#define RC_STEERING  9  
-#define ENA  5
-#define ENB  6
-
-int speedValue = 0;
-int steeringValue = 0;
+int buzzerPin = 13; 
+void sound();
 
 void setup() {
-  pinMode(BUZZER_PIN,OUTPUT); //buzzer passive output
+  Serial.begin(9600);
+  pinMode(leftPWM, OUTPUT);
+  pinMode(leftDir1, OUTPUT);
+  pinMode(leftDir2, OUTPUT);
+  pinMode(rightPWM, OUTPUT);
+  pinMode(rightDir1, OUTPUT);
+  pinMode(rightDir2, OUTPUT);
+  pinMode(RX_CH_1, INPUT);
+  pinMode(RX_CH_2, INPUT);
 
-      // Play the melody
-  for (int i = 0; i < sizeof(melody) / sizeof(int); i++) {
-    playTone(melody[i], noteDurations[i]);
-  }
+  digitalWrite(leftDir1, LOW); 
+  digitalWrite(leftDir2, LOW); 
+  analogWrite(leftPWM, 0);
+  digitalWrite(rightDir1, LOW);
+  digitalWrite(rightDir2, LOW);
+  analogWrite(rightPWM, 0);
 
-  // Set pins for motors, receiver, and buzzer
-  pinMode(MOTOR_A_FWD, OUTPUT);
-  pinMode(MOTOR_A_BWD, OUTPUT);
-  pinMode(MOTOR_B_FWD, OUTPUT);
-  pinMode(MOTOR_B_BWD, OUTPUT);
-  pinMode(ENA, OUTPUT);
-  pinMode(ENB, OUTPUT);
-  pinMode(RC_SPEED, INPUT);
-  pinMode(RC_STEERING, INPUT);
-  pinMode(buzzerPin, OUTPUT);
-//  Serial.begin(9600);  // Debugging
+  sound();
+  sound();
 }
 
+// Main Loop
 void loop() {
-  // Read RC receiver channels
-  speedValue = pulseIn(RC_SPEED, HIGH, 25000);
-  steeringValue = pulseIn(RC_STEERING, HIGH, 25000);
+
+  // Read pulse width from receiver
+  throttleCH = pulseIn(RX_CH_2, HIGH, 25000);
+  steeringCH = pulseIn(RX_CH_1, HIGH, 25000);
+  // Serial.print(" steeringCH : ");
+  // Serial.println(steeringCH);
+  // Serial.print(" throttleCH: ");
+  // Serial.println(steeringCH);
+
+  // Convert to PWM value (-255 to 255)
+  throttleCH = pulseToPWM(throttleCH);
+  steeringCH = pulseToPWM(steeringCH);
+
+  // Channel 1 and Channel 2 Mixing
+  leftMotorSpeed = throttleCH + steeringCH;
+  rightMotorSpeed = throttleCH - steeringCH;
+
+  // Drive motor
+  drive(leftMotorSpeed, rightMotorSpeed);
+
+  //code below is for debug. please comment when not use
+  //Serial.print("leftMotorSpeed : ");
+  //Serial.println(leftMotorSpeed);
+  //Serial.print("   rightMotorSpeed: ");
+  //Serial.println(rightMotorSpeed);
+
+  //Serial.print("steering=");
+  //Serial.println(steeringCH);
+  //Serial.print("throttle=");
+  //Serial.println(throttleCH);
+  //delay(100);
+  
+}
+
+// Positive for forward, negative for reverse
+void drive(int leftVal, int rightVal) {
+
+  // Limit speed between -255 and 255
+  leftVal = constrain(leftVal, -255, 255);
+  rightVal = constrain(rightVal, -255, 255);
+
+  // Set direction for left motor
+  if (leftVal == 0) {
+    digitalWrite(leftDir1, 0);
+    digitalWrite(leftDir2, 1);
+    analogWrite(leftPWM, 0);
+  } else if (leftVal > 0) {
+    digitalWrite(leftDir1, 0);
+    digitalWrite(leftDir2, 1);
+    analogWrite(leftPWM, abs(leftVal));
+  } else {
+    digitalWrite(leftDir1, 1);
+    digitalWrite(leftDir2, 0);
+    analogWrite(leftPWM, abs(leftVal));
+  }
+
+  // Set direction for right motor
+  if (rightVal == 0) {
+    digitalWrite(rightDir1, 1);
+    digitalWrite(rightDir2, 0);
+    analogWrite(rightPWM, 0);
+
+  } else if (rightVal > 0) {
+    digitalWrite(rightDir1, 0);
+    digitalWrite(rightDir2, 1);
+    analogWrite(rightPWM, abs(rightVal));
+  } else {
+    digitalWrite(rightDir1, 1);
+    digitalWrite(rightDir2, 0);
+    analogWrite(rightPWM, abs(rightVal));
+  }
+}
+
+// Convert RC pulse value to motor PWM value
+int pulseToPWM(int pulse) {
+
+  // If we're receiving numbers, convert them to motor PWM
+  if (pulse > 1000) {
+    pulse = map(pulse, 1000, 2000, -500, 500);
+    pulse = constrain(pulse, -255, 255);
+  } else {
+    pulse = 0;
+  }
+
+  // Anything in deadzone should stop the motor
+  if (abs(pulse) <= deadZone) {
+    pulse = 0;
+  }
+  return pulse;
+}
+
+
 /*
-  Serial.print("Speed Value: ");
-  Serial.print(speedValue);
-  Serial.print("  | Steering Value: ");
-  Serial.println(steeringValue);
+This functions to create wheesel sound on active buzzer
 */
-  // Map RC values to motor speeds with dead zone near neutral
-  int motorSpeed = map(speedValue, 1004, 1950, -255, 255);
-  int steering = map(steeringValue, 1000, 2000, -255, 255);
-
-  // Dead zone for motor speed
-  if (abs(motorSpeed) < 15) {  // Adjust as needed to ensure zero movement at neutral
-    motorSpeed = 0;
+void sound() {
+  // Generate a chirp-like sound
+  for (int i = 1000; i <= 1500; i += 100) { // Ascending frequency
+    tone(buzzerPin, i); // Play the tone
+    delay(25);          // Short delay between tones
+  }  
+  for (int i = 1500; i >= 1000; i -= 100) { // Descending frequency
+    tone(buzzerPin, i); // Play the tone
+    delay(25);          // Short delay between tones
   }
-
-  // Calculate motor speeds based on speed and steering
-  int leftMotorSpeed = motorSpeed + steering;
-  int rightMotorSpeed = motorSpeed - steering;
-
-  // Control motor A based on left motor speed
-  if (leftMotorSpeed > 0) {
-    digitalWrite(MOTOR_A_FWD, HIGH);
-    digitalWrite(MOTOR_A_BWD, LOW);
-  } else if (leftMotorSpeed < 0) {
-    digitalWrite(MOTOR_A_FWD, LOW);
-    digitalWrite(MOTOR_A_BWD, HIGH);
-  } else {
-    digitalWrite(MOTOR_A_FWD, LOW);
-    digitalWrite(MOTOR_A_BWD, LOW);
-  }
-  analogWrite(ENA, abs(leftMotorSpeed));
-
-  // Control motor B based on right motor speed
-  if (rightMotorSpeed > 0) {
-    digitalWrite(MOTOR_B_FWD, HIGH);
-    digitalWrite(MOTOR_B_BWD, LOW);
-  } else if (rightMotorSpeed < 0) {
-    digitalWrite(MOTOR_B_FWD, LOW);
-    digitalWrite(MOTOR_B_BWD, HIGH);
-  } else {
-    digitalWrite(MOTOR_B_FWD, LOW);
-    digitalWrite(MOTOR_B_BWD, LOW);
-  }
-  analogWrite(ENB, abs(rightMotorSpeed));
-
-  // Buzzer control based on max speed
-  if (motorSpeed == 255 || motorSpeed == -255) {
-    digitalWrite(buzzerPin, HIGH);
-  } else {
-    digitalWrite(buzzerPin, LOW);
-  }
-
-  delay(5);  // Small delay for stability
-}
-
-// Function to stop motors
-void stopMotors() {
-  digitalWrite(MOTOR_A_FWD, LOW);
-  digitalWrite(MOTOR_A_BWD, LOW);
-  digitalWrite(MOTOR_B_FWD, LOW);
-  digitalWrite(MOTOR_B_BWD, LOW);
-}
-
-// Function for chirping sound
-void chirp() {
-      // First chirp (rise and fall in pitch)
-  for (int freq = 1000; freq <= 2000; freq += 50) {
-    tone(BUZZER_PIN, freq, 50);  // Play rising tone
-    delay(50);                  // Short delay between frequencies
-  }
-}
-
-
-void playTone(int note, int duration) {
-  if (note == 0) {
-    delay(duration);
-  } else {
-    tone(BUZZER_PIN, note, duration);
-    delay(duration * 1.30);
-    noTone(BUZZER_PIN);
-  }
+  noTone(buzzerPin);  // Stop the sound after the chirp
 }
 
