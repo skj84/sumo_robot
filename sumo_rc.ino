@@ -91,38 +91,47 @@ void loop() {
 void drive(int leftVal, int rightVal) {
 
   // Limit speed between -255 and 255
-  leftVal = constrain(leftVal, -255, 255);
-  rightVal = constrain(rightVal, -255, 255);
+  leftVal = constrain(leftVal, -200, 200);
+  rightVal = constrain(rightVal, -200, 200);
 
   // Set direction for left motor
   if (leftVal == 0) {
-    digitalWrite(leftDir1, 0);
+    digitalWrite(leftDir1, 1);
     digitalWrite(leftDir2, 1);
-    analogWrite(leftPWM, 0);
+    analogWrite(leftPWM, 255);
+
   } else if (leftVal > 0) {
     digitalWrite(leftDir1, 0);
     digitalWrite(leftDir2, 1);
     analogWrite(leftPWM, abs(leftVal));
-  } else {
+  } else if (leftVal < 0) {
     digitalWrite(leftDir1, 1);
     digitalWrite(leftDir2, 0);
     analogWrite(leftPWM, abs(leftVal));
   }
+  else{
+    breakMotor();
+  }
+
 
   // Set direction for right motor
   if (rightVal == 0) {
     digitalWrite(rightDir1, 1);
-    digitalWrite(rightDir2, 0);
-    analogWrite(rightPWM, 0);
+    digitalWrite(rightDir2, 1);
+    analogWrite(rightPWM, 255);
 
   } else if (rightVal > 0) {
     digitalWrite(rightDir1, 0);
     digitalWrite(rightDir2, 1);
     analogWrite(rightPWM, abs(rightVal));
-  } else {
+  } else if (rightVal < 0){
     digitalWrite(rightDir1, 1);
     digitalWrite(rightDir2, 0);
     analogWrite(rightPWM, abs(rightVal));
+  }
+  
+  else{
+    breakMotor();
   }
 }
 
@@ -161,3 +170,11 @@ void sound() {
   noTone(buzzerPin);  // Stop the sound after the chirp
 }
 
+void breakMotor(){
+    digitalWrite(rightDir1, 1);
+    digitalWrite(rightDir2, 1);
+    analogWrite(rightPWM, 255);
+    digitalWrite(rightDir1, 1);
+    digitalWrite(rightDir2, 1);
+    analogWrite(rightPWM, 255);
+}
